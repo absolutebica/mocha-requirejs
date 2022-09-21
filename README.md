@@ -8,4 +8,4 @@ Basic setup so mocha unit testing can work with requirejs when having to access 
 
 Files go inside `test` folder in the root.  Add the following to your `scripts` object in the package.json 
 
-`"test": "mocha test/**/*.js"
+`"test": "mocha test/**/*.js"`
