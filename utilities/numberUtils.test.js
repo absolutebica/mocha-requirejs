@@ -1,49 +1,99 @@
 const requirejs = require("../requirejsTestConfig");
-const {expect} = require("chai");
+const assert = require("assert");
 
-let utilityComponent;
+let numberUtils = null;
 
-// This must run in order to capture the file to test
-before((done) =>{
-    requirejs(['tools/numberUtils'], (NumberUtils) => {
-        utilityComponent = NumberUtils;
-        done();
+before((done) => {
+    requirejs(
+        [
+            'tools/numberUtils'
+        ], 
+        (NumberUtils) => {
+            numberUtils = NumberUtils;
+            done();
+        }
+    );
+}); 
+
+describe('NumberUtils::formatDynamicDecimal', () => {
+    it ('Test null parsing', () => {
+        const formattedNumber = numberUtils.formatDynamicDecimal(null);
+        assert.strictEqual(formattedNumber, 0);
+        assert.strictEqual(typeof formattedNumber, 'number');
+    });
+
+    it ('Test undefined parsing', () => {
+        const formattedNumber = numberUtils.formatDynamicDecimal(undefined);
+        assert.strictEqual(formattedNumber, 0);
+        assert.strictEqual(typeof formattedNumber, 'number');
+    });
+
+    it ('Test non-numeric string', () => {
+        const formattedNumber = numberUtils.formatDynamicDecimal('slkdf');
+        assert.strictEqual(formattedNumber, 0);
+        assert.strictEqual(typeof formattedNumber, 'number');
+    });
+
+    it ('Test integer parsing', () => {
+        let formattedNumber = numberUtils.formatDynamicDecimal('1');
+        assert.strictEqual(formattedNumber, 1);
+        
+        formattedNumber = numberUtils.formatDynamicDecimal('1', 2);
+        assert.strictEqual(formattedNumber, 1);
+        assert.strictEqual(typeof formattedNumber, 'number');
+    });
+
+    it ('Test float parsing', () => {
+        let formattedNumber = numberUtils.formatDynamicDecimal('1.1', 2);
+        assert.strictEqual(formattedNumber, 1.1);
+
+        formattedNumber = numberUtils.formatDynamicDecimal('1.346', 2);
+        assert.strictEqual(formattedNumber, '1.35');
+    });
+
+    it ('Test float typeof', () => {
+        let formattedNumber = numberUtils.formatDynamicDecimal('1.346', 2);
+        assert.strictEqual(typeof formattedNumber, 'string');
     });
 });
 
-describe('formatDynamicDecimal function', () => {
+describe('NumberUtils::formatPercent', () => {
+    it ('Test null parsing', () => {
+        const formattedPercent = numberUtils.formatPercent(null);
+        assert.strictEqual(formattedPercent, '');
+    });
 
-    for (let decimalPlace = 0; decimalPlace < 10; decimalPlace++) {
+    it ('Test undefined parsing', () => {
+        const formattedPercent = numberUtils.formatPercent(undefined);
+        assert.strictEqual(formattedPercent, '');
+    });
 
-        const number = !decimalPlace ? 1 : (1.1).toFixed(decimalPlace);
-        const decimalString = decimalPlace > 1 ? 'decimal places' : 'decimal place';
-
-        it(`Valid Data Test: Number with ${decimalPlace} ${decimalString}`, () => {
-            const result = utilityComponent.formatDynamicDecimal(number, decimalPlace);
-            expect(result, `Result ${result} should equal ${number}`).to.equal(number);
-        });
-    }
-
-    const badData = [
-        {number: "a01", decimalPlace: 0},
-        {number: "5.22.133", decimalPlace: 2},
-        {number: 10000, decimalPlace: '2'},
-        {number: 5.0555, decimalPlace: 'b'},
-        {number: "a01", decimalPlace: 5},
-        {number: "100%.3", decimalPlace: 4},
-        {number: null, decimalPlace: 1},
-    ]
+    it ('Test is NaN', () => {
+        const formattedPercent = numberUtils.formatPercent('fifty');
+        assert.strictEqual(formattedPercent, '');
+    });
     
-    for (const data of badData) {
-        const decimalString = data.decimalPlace > 1 ? 'decimal places' : 'decimal place';
+    it ('Test isDecimal true', () => {
+        const formattedPercent = numberUtils.formatPercent(0.5, true);
+        assert.strictEqual(formattedPercent, '50.00%');
+        assert.strictEqual(typeof formattedPercent, 'string');
+    });
 
-        it(`Invalid Data Test: Number with ${data.decimalPlace} ${decimalString}`, () => {
-            const result = utilityComponent.formatDynamicDecimal(data.number, data.decimalPlace);
-            if (result === data.number) {
-                return;
-            }
-            expect(result, `Result ${result} should NOT equal ${data.number}`).to.not.equal(data.number);
-        });
-    }
+    it ('Test integer parsing', () => {
+        const formattedPercent = numberUtils.formatPercent(50, false, 1);
+        assert.strictEqual(formattedPercent, '50.0%');
+        assert.strictEqual(typeof formattedPercent, 'string');
+    });
+
+    it ('Test integer parsing & isDecimal True', () => {
+        const formattedPercent = numberUtils.formatPercent(0.754, true, 3);
+        assert.strictEqual(formattedPercent, '75.400%');
+        assert.strictEqual(typeof formattedPercent, 'string');
+    });
+
+    it ('Test undefined parsing', () => {
+        const formattedPercent = numberUtils.formatPercent(undefined);
+        assert.strictEqual(formattedPercent, '');
+    });
 
 });
